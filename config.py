@@ -14,3 +14,6 @@ SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY')
 
 # OthersAPI
 RAPID = os.environ.get('RAPID')
+
+# YouTube API
+YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
