@@ -1,7 +1,7 @@
 import requests
 from icrawler import ImageDownloader
 from icrawler.builtin import GoogleImageCrawler
-from serpapi import GoogleSearch
+from serpapi.google_search import GoogleSearch
 
 
 class CustomLinkPrinter(ImageDownloader):

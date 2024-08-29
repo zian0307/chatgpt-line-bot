@@ -17,6 +17,8 @@ from chatgpt_linebot.modules import (
     recommend_videos,
 )
 from chatgpt_linebot.prompts import agent_template, girlfriend
+from chatgpt_linebot.modules.threads_function import ThreadsAPI
+from chatgpt_linebot.database import get_user_settings, save_user_settings, decrypt_token
 
 sys.path.append(".")
 
@@ -110,54 +112,101 @@ def send_text_reply(reply_token, text: str) -> None:
 
 @handler.add(MessageEvent, message=(TextMessage))
 def handle_message(event) -> None:
-    """Event - User sent message
+    """處理用戶發送的消息
 
     Args:
-        event (LINE Event Object)
+        event (LINE Event Object): LINE 事件對象
 
-    Refs:
-        https://developers.line.biz/en/reference/messaging-api/#message-event
-        https://www.21cs.tw/Nurse/showLiangArticle.xhtml?liangArticleId=503
+    這個函數處理以下幾種命令:
+    1. /set_threads_id: 設置用戶的 Threads ID
+    2. /set_threads_token: 設置用戶的 Threads 訪問令牌
+    3. /threads: 發布內容到 Threads
     """
-    if not isinstance(event.message, TextMessage):
-        return
-
+    # 獲取回覆令牌和用戶消息
     reply_token = event.reply_token
     user_message = event.message.text
 
+    # 獲取消息來源類型和ID
     source_type = event.source.type
     source_id = getattr(event.source, f"{source_type}_id", None)
 
+    # 如果是用戶發送的消息,打印用戶名和消息內容
     if source_type == 'user':
         user_name = line_bot_api.get_profile(source_id).display_name
         print(f'{user_name}: {user_message}')
-
+    # 如果是群組消息,只處理以 @chat 開頭的消息
     else:
         if not user_message.startswith('@chat'):
             return
         else:
             user_message = user_message.replace('@chat', '')
 
+    # 處理設置 Threads 用戶 ID 的命令
+    if user_message.startswith('/set_threads_id '):
+        user_id = event.source.user_id
+        threads_user_id = user_message[16:].strip()
+        user_settings = get_user_settings(user_id)
+        if user_settings:
+            save_user_settings(user_id, threads_user_id, decrypt_token(user_settings.encrypted_token))
+        else:
+            save_user_settings(user_id, threads_user_id, '')
+        send_text_reply(reply_token, f"已設定 Threads 用戶 ID: {threads_user_id}")
+        return
+
+    # 處理設置 Threads 訪問令牌的命令
+    if user_message.startswith('/set_threads_token '):
+        user_id = event.source.user_id
+        threads_token = user_message[19:].strip()
+        user_settings = get_user_settings(user_id)
+        if user_settings:
+            save_user_settings(user_id, user_settings.threads_user_id, threads_token)
+        else:
+            save_user_settings(user_id, '', threads_token)
+        send_text_reply(reply_token, "已設定並加密 Threads 訪問令牌")
+        return
+
+    # 處理發布到 Threads 的命令
+    if user_message.startswith('/threads '):
+        user_id = event.source.user_id
+        user_settings = get_user_settings(user_id)
+        if not user_settings or not user_settings.threads_user_id or not user_settings.encrypted_token:
+            send_text_reply(reply_token, "請先設定您的 Threads 用戶 ID 和訪問令牌。使用 /set_threads_id 和 /set_threads_token 命令。")
+            return
+
+        threads_content = user_message[9:]  # 移除 '/threads ' 前綴
+        decrypted_token = decrypt_token(user_settings.encrypted_token)
+        threads_api = ThreadsAPI(user_settings.threads_user_id, decrypted_token)
+        try:
+            post_id = threads_api.post_threads(threads_content)
+            response = f"已成功發布到Threads，帖子ID: {post_id}"
+        except Exception as e:
+            response = f"發布到Threads時出錯: {str(e)}"
+        send_text_reply(reply_token, response)
+        return
+    
     tool, input_query = agent(user_message)
 
+    # 如果是聊天完成,添加角色設定並更新記憶
     if tool in ['chat_completion']:
         input_query = f"{girlfriend}:\n {input_query}"
         memory.append(source_id, 'user', f"{girlfriend}:\n {user_message}")
 
     try:
+        # 根據選擇的工具生成回覆
         if tool in ['chat_completion']:
             response = chat_completion(source_id, memory)
         else:
             response = eval(f"{tool}('{input_query}')")
 
+        # 發送圖片或文字回覆
         if is_url(response):
             send_image_reply(reply_token, response)
         else:
             send_text_reply(reply_token, response)
 
     except Exception as e:
+        # 發送錯誤信息
         send_text_reply(reply_token, e)
-
 
 @line_app.get("/recommend")
 def recommend_from_yt() -> None:
@@ -193,4 +242,3 @@ def recommend_from_yt() -> None:
     else:
         print('Failed recommended videos')
         return {"status": "failed", "message": "no get recommended videos."}
-    
