@@ -30,11 +30,11 @@ class ThreadsAPI:
         response = requests.post(endpoint, data=data)
         return response.json().get("id")
 
-    def post_thread(self, text, media_type="TEXT", image_url=None):
+    def post_threads(self, text, media_type="TEXT", image_url=None):
         container_id = self.create_container(media_type, text, image_url)
         return self.publish_container(container_id)
 
-    def reply_to_thread(self, reply_text, thread_id):
+    def reply_to_threads(self, reply_text, thread_id):
         endpoint = f"{self.BASE_URL}/me/threads"
         data = {
             "media_type": "TEXT",
@@ -54,15 +54,15 @@ def main():
     api = ThreadsAPI(USER_ID, LONG_LIVED_TOKEN)
 
     # 發布純文字帖子
-    text_post_id = api.post_thread("大家好，這是一個測試帖子！")
+    text_post_id = api.post_threads("大家好，這是一個測試帖子！")
     print(f"純文字帖子已發布，ID: {text_post_id}")
 
     # 發布帶圖片的帖子
-    image_post_id = api.post_thread("這是一張美麗的圖片！", "IMAGE", "https://example.com/beautiful_image.jpg")
+    image_post_id = api.post_threads("這是一張美麗的圖片！", "IMAGE", "https://example.com/beautiful_image.jpg")
     print(f"帶圖片的帖子已發布，ID: {image_post_id}")
 
     # 回覆帖子
-    reply_id = api.reply_to_thread("這是一個測試回覆！", text_post_id)
+    reply_id = api.reply_to_threads("這是一個測試回覆！", text_post_id)
     print(f"回覆已發布，ID: {reply_id}")
 
 if __name__ == "__main__":
