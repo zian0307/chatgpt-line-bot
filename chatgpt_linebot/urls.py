@@ -134,24 +134,33 @@ def handle_message(event) -> None:
     2. /set_threads_token: 設置用戶的 Threads 訪問令牌
     3. /threads: 發布內容到 Threads
     """
+    print(f"開始處理消息: {event}")  # 新增：打印整個事件對象
+
     # 獲取回覆令牌和用戶消息
     reply_token = event.reply_token
     user_message = event.message.text
+    print(f"回覆令牌: {reply_token}")  # 新增：打印回覆令牌
+    print(f"用戶消息: {user_message}")  # 新增：打印用戶消息
 
     # 獲取消息來源類型和ID
     source_type = event.source.type
     source_id = getattr(event.source, f"{source_type}_id", None)
+    print(f"消息來源類型: {source_type}")  # 新增：打印消息來源類型
+    print(f"消息來源ID: {source_id}")  # 新增：打印消息來源ID
 
     # 如果是用戶發送的消息,打印用戶名和消息內容
     if source_type == 'user':
         user_name = line_bot_api.get_profile(source_id).display_name
-        print(f'{user_name}: {user_message}')
+        print(f'用戶名: {user_name}')  # 新增：打印用戶名
+        print(f'用戶消息: {user_message}')
     # 如果是群組消息,只處理以 @chat 開頭的消息
     else:
         if not user_message.startswith('@chat'):
+            print("群組消息不以 @chat 開頭，忽略")  # 新增：打印忽略的原因
             return
         else:
             user_message = user_message.replace('@chat', '')
+            print(f"處理群組消息: {user_message}")  # 新增：打印處理後的群組消息
 
     # 處理設置 Threads 用戶 ID 的命令
     if user_message.startswith('/set_threads_id '):
@@ -197,11 +206,14 @@ def handle_message(event) -> None:
         return
     
     tool, input_query = agent(user_message)
+    print(f"選擇的工具: {tool}")  # 新增：打印選擇的工具
+    print(f"輸入查詢: {input_query}")  # 新增：打印輸入查詢
 
     # 如果是聊天完成,添加角色設定並更新記憶
     if tool in ['chat_completion']:
         input_query = f"{girlfriend}:\n {input_query}"
         memory.append(source_id, 'user', f"{girlfriend}:\n {user_message}")
+        print("已更新記憶")  # 新增：確認記憶更新
 
     try:
         # 根據選擇的工具生成回覆
@@ -209,16 +221,22 @@ def handle_message(event) -> None:
             response = chat_completion(source_id, memory)
         else:
             response = eval(f"{tool}('{input_query}')")
+        print(f"生成的回覆: {response}")  # 新增：打印生成的回覆
 
         # 發送圖片或文字回覆
         if is_url(response):
+            print("發送圖片回覆")  # 新增：確認發送圖片
             send_image_reply(reply_token, response)
         else:
+            print("發送文字回覆")  # 新增：確認發送文字
             send_text_reply(reply_token, response)
 
     except Exception as e:
         # 發送錯誤信息
-        send_text_reply(reply_token, e)
+        print(f"發生錯誤: {str(e)}")  # 新增：打印錯誤信息
+        send_text_reply(reply_token, str(e))
+
+    print("消息處理完成")  # 新增：確認消息處理完成
 
 @line_app.get("/recommend")
 def recommend_from_yt() -> None:
