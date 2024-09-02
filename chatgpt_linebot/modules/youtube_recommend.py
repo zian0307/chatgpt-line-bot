@@ -10,7 +10,7 @@ from chatgpt_linebot.prompts import youtube_recommend_template
 
 def get_youtube_client():
     """獲取 YouTube API 客戶端"""
-    youtube_api_key = config.YOUTUBE_API_KEYß
+    youtube_api_key = config.YOUTUBE_API_KEY
     return build("youtube", "v3", developerKey=youtube_api_key)
 
 
