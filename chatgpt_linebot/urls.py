@@ -1,5 +1,6 @@
 import sys
 from urllib.parse import urlparse
+import re
 
 from fastapi import APIRouter, HTTPException, Request
 from linebot import LineBotApi, WebhookHandler
@@ -74,12 +75,16 @@ def agent(query: str) -> tuple[str, str]:
         response = chat(message)
         print(f"Agent response: {response}")
         
-        parts = response.split(", ", 1)
-        if len(parts) != 2:
+        # 使用正則表達式解析 response
+        match = re.search(r'function_name: ([\w\.]+), input: (.+)', response) or \
+                re.search(r'([\w\.]+): (.+)', response)
+        
+        if not match:
             print(f"Unexpected response format: {response}")
             return "chat_completion", query  # 默認使用聊天完成
         
-        tool, input_query = parts
+        tool, input_query = match.groups()
+        input_query = input_query.strip()  # 移除可能的前後空白
 
         print(f"""
         Agent
