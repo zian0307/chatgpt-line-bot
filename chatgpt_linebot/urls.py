@@ -24,11 +24,6 @@ sys.path.append(".")
 
 import config
 
-import logging
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
-
 line_app = APIRouter()
 memory = Memory(3)
 horoscope = Horoscope()
@@ -77,16 +72,16 @@ def agent(query: str) -> tuple[str, str]:
 
     try:
         response = chat(message)
-        logger.info(f"Agent response: {response}")
+        print(f"Agent response: {response}")
         
         parts = response.split(", ", 1)
         if len(parts) != 2:
-            logger.error(f"Unexpected response format: {response}")
+            print(f"Unexpected response format: {response}")
             return "chat_completion", query  # 默認使用聊天完成
         
         tool, input_query = parts
 
-        logger.info(f"""
+        print(f"""
         Agent
         =========================================
         Query: {query}
@@ -96,7 +91,7 @@ def agent(query: str) -> tuple[str, str]:
 
         return tool, input_query
     except Exception as e:
-        logger.exception(f"Error in agent function: {e}")
+        print(f"Error in agent function: {e}")
         return "chat_completion", query  # 出錯時默認使用聊天完成
 
 
