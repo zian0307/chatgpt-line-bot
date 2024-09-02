@@ -24,6 +24,11 @@ sys.path.append(".")
 
 import config
 
+import logging
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 line_app = APIRouter()
 memory = Memory(3)
 horoscope = Horoscope()
@@ -65,22 +70,34 @@ def is_url(string: str) -> bool:
         return False
 
 
-def agent(query: str) -> tuple[str]:
-    """Auto use correct tool by user query."""
+def agent(query: str) -> tuple[str, str]:
+    """自動根據用戶查詢使用正確的工具。"""
     prompt = agent_template + query
     message = [{'role': 'user', 'content': prompt}]
 
-    tool, input = chat(message).split(', ')
+    try:
+        response = chat(message)
+        logger.info(f"Agent response: {response}")
+        
+        parts = response.split(", ", 1)
+        if len(parts) != 2:
+            logger.error(f"Unexpected response format: {response}")
+            return "chat_completion", query  # 默認使用聊天完成
+        
+        tool, input_query = parts
 
-    print(f"""
-    Agent
-    =========================================
-    Query: {query}
-    Tool: {tool}
-    Input: {input}
-    """)
+        logger.info(f"""
+        Agent
+        =========================================
+        Query: {query}
+        Tool: {tool}
+        Input: {input_query}
+        """)
 
-    return tool, input
+        return tool, input_query
+    except Exception as e:
+        logger.exception(f"Error in agent function: {e}")
+        return "chat_completion", query  # 出錯時默認使用聊天完成
 
 
 def search_image_url(query: str) -> str:
