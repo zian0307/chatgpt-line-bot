@@ -17,3 +17,6 @@ RAPID = os.environ.get('RAPID')
 
 # YouTube API
 YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+
+# OpenAI API
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
