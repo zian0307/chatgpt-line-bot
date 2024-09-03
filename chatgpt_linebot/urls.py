@@ -17,11 +17,9 @@ from chatgpt_linebot.modules import (
     Horoscope,
     ImageCrawler,
     RapidAPIs,
-    chat,
-    chat_completion,
-    g4f_generate_image,
     recommend_videos,
 )
+from chatgpt_linebot.modules.chat import generate_chat_response, chat_completion
 from chatgpt_linebot.modules.threads_function import ThreadsAPI
 from chatgpt_linebot.prompts import agent_template, girlfriend
 
@@ -76,7 +74,7 @@ def agent(query: str) -> tuple[str, str]:
     message = [{"role": "user", "content": prompt}]
 
     try:
-        response = chat(message)
+        response = generate_chat_response(message)
         print(f"Agent response: {response}")
 
         # 使用正則表達式解析 response

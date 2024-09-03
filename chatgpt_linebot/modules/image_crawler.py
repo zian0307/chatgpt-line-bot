@@ -1,9 +1,10 @@
 import requests
+from bs4 import BeautifulSoup
 from icrawler import ImageDownloader
 from icrawler.builtin import GoogleImageCrawler
 from serpapi.google_search import GoogleSearch
+
 import config
-from bs4 import BeautifulSoup
 
 serpapi_key = config.SERPAPI_API_KEY
 
