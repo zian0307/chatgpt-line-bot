@@ -7,7 +7,7 @@ readme = "README.md"
 # packages = [{include = "chatgpt_line_bot"}] # replit
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = ">=3.10,<4.0"
 uvicorn = "^0.23.2"
 fastapi = "^0.104.0"
 g4f = "*"
@@ -30,6 +30,10 @@ msrest = "^0.7.1"
 certifi = "^2024.8.30"
 openai = "^1.43.0"
 curl-cffi = "^0.7.1"
+googlemaps = "^4.10.0"
+twstock = "^1.4.0"
+numpy = "^2.1.1"
+matplotlib = "^3.9.2"
 
 [build-system]
 requires = ["poetry-core"]

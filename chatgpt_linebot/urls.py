@@ -187,7 +187,7 @@ def handle_message(event) -> None:
             )
         else:
             save_user_settings(user_id, threads_user_id, "")
-        send_text_reply(reply_token, f"已設定 Threads 用戶 ID: {threads_user_id}")
+        send_text_reply(reply_token, f"喵~！我記住你的Threads名字啦：{threads_user_id} (^._.^)ﾉ")
         return
 
     # 處理設置 Threads 訪問令牌的命令
@@ -199,7 +199,7 @@ def handle_message(event) -> None:
             save_user_settings(user_id, user_settings.threads_user_id, threads_token)
         else:
             save_user_settings(user_id, "", threads_token)
-        send_text_reply(reply_token, "已設定並加密 Threads 訪問令牌")
+        send_text_reply(reply_token, "喵喵~！你的Threads秘密我已經藏好啦！(=^･ω･^=)✨\n現在我們可以一起在Threads上冒險了喵~")
         return
 
     # 處理發布到 Threads 的命令
@@ -213,7 +213,9 @@ def handle_message(event) -> None:
         ):
             send_text_reply(
                 reply_token,
-                "請先設定您的 Threads 用戶 ID 和訪問令牌。使用 /set_threads_id 和 /set_threads_token 命令。",
+                "喵~ 你還沒告訴我你的Threads秘密呢！(=^･ω･^=)\n"
+                "用/set_threads_id和/set_threads_token告訴我好嗎？\n"
+                "我們一起在Threads上玩耍喵！",
             )
             return
 
