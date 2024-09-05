@@ -1,5 +1,7 @@
 import random
+from datetime import date
 from typing import Dict, List
+import hashlib
 
 from googleapiclient.discovery import build
 
@@ -49,6 +51,11 @@ def format_video_info(video: Dict) -> Dict:
         return {}
 
 
+def get_daily_seed(date_str: str) -> int:
+    """根據日期字符串生成一個穩定的種子"""
+    return int(hashlib.md5(date_str.encode()).hexdigest(), 16)
+
+
 def recommend_videos() -> str:
     """推薦 YouTube 影片"""
     try:
@@ -56,11 +63,18 @@ def recommend_videos() -> str:
         if not popular_videos:
             return "無法獲取熱門音樂影片。"
 
-        selected_videos = random.sample(popular_videos, 3)
-        video_info = [format_video_info(video) for video in selected_videos]
+        # 使用當前日期作為種子
+        today = date.today().isoformat()
+        daily_seed = get_daily_seed(today)
+        
+        # 使用日期種子來選擇影片
+        random.seed(daily_seed)
+        selected_video = random.choice(popular_videos)
+        video_info = format_video_info(selected_video)
 
-        prompt = f"{youtube_recommend_template}{video_info}"
+        prompt = f"{youtube_recommend_template}{[video_info]}"
         return generate_chat_response([{"role": "user", "content": prompt}])
+
     except Exception as e:
         print(f"推薦影片失敗: {e}")
         return "推薦影片時發生錯誤。"
