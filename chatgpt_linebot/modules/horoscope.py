@@ -15,7 +15,6 @@ class Horoscope:
     }
     error_msg = (
         "Cannot get the horoscope, please try again.🥶\n"
-        "Or connect to developer: https://github.com/Lin-jun-xiang/chatgpt-line-bot/issues"
     )
 
 

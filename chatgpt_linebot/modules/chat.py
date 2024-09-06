@@ -30,7 +30,6 @@ def generate_chat_response(message: List[Dict]) -> str:
         except Exception as e:
             response = (
                 "There're something wrong in both OpenAI and g4f APIs, please try again.\n"
-                "Or connect to developer: https://github.com/Lin-jun-xiang/chatgpt-line-bot/issues \n"
                 f"{e}"
             )
             print(e)
