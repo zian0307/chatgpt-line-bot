@@ -244,9 +244,11 @@ def handle_message(event) -> None:
         threads_api = ThreadsAPI(user_settings.threads_user_id, decrypted_token)
         try:
             post_id = threads_api.post_threads(threads_content)
-            response = f"已成功發布到Threads，帖子ID: {post_id}"
+            response = f"""喵 我們的小秘密已經分享到 Threads 啦 😺\n大家都能看到我們的有趣想法了呢\n要不要去看看有沒有人喜歡呢"""
+            print(f"發布到 Threads 成功: {post_id}")
         except Exception as e:
-            response = f"發布到Threads時出錯: {str(e)}"
+            response = f"""喵 看來 Threads 今天有點小脾氣呢 🙀\n我們待會再試試看好嗎\n現在要不要聊聊你想分享的有趣事情呢"""
+            print(f"發布到 Threads 時出錯: {str(e)}")
         send_text_reply(reply_token, response)
         return
 
@@ -278,7 +280,7 @@ def handle_message(event) -> None:
                 # recommend_videos 不需要參數
                 response = function_map[tool]()
             else:
-                # 其他函數可能需要參數
+                # 其他函數���能需要參數
                 response = function_map[tool](input_query)
         else:
             # 如果工具不在映射中，使用默認的聊天完成
