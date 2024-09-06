@@ -10,13 +10,16 @@ LINE_CHANNEL_SECRET = os.environ.get("LINE_CHANNEL_SECRET")
 LINE_CHANNEL_ACCESS_TOKEN = os.environ.get("LINE_CHANNEL_ACCESS_TOKEN")
 
 # SerpAPI
-SERPAPI_API_KEY = os.environ.get('SERPAPI_API_KEY')
+SERPAPI_API_KEY = os.environ.get("SERPAPI_API_KEY")
 
 # OthersAPI
-RAPID = os.environ.get('RAPID')
+RAPID = os.environ.get("RAPID")
 
 # YouTube API
-YOUTUBE_API_KEY = os.environ.get('YOUTUBE_API_KEY')
+YOUTUBE_API_KEY = os.environ.get("YOUTUBE_API_KEY")
 
 # OpenAI API
-OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+
+# Known group IDs
+KNOWN_GROUP_IDS = []
