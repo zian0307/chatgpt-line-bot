@@ -77,29 +77,44 @@ def agent(query: str) -> tuple[str, str]:
         response = generate_chat_response(message)
         print(f"Agent response: {response}")
 
-        # 使用正則表達式解析 response
-        match = re.search(
-            r"function_name: ([\w\.]+), input: (.+)", response
-        ) or re.search(r"([\w\.]+): (.+)", response)
+        # 定義可用的工具列表
+        available_tools = [
+            "g4f_generate_image",
+            "rapidapis.ai_text_to_img",
+            "search_image_url",
+            "horoscope.get_horoscope_response",
+            "recommend_videos",
+            "chat_completion"
+        ]
 
-        if not match:
-            print(f"Unexpected response format: {response}")
-            return "chat_completion", query  # 默認使用聊天完成
+        # 使用正則表達式在回應中尋找工具名稱
+        for tool in available_tools:
+            if re.search(rf"\b{re.escape(tool)}\b", response, re.IGNORECASE):
+                # 提取工具名稱後的輸入內容
+                match = re.search(rf"{re.escape(tool)}:?\s*(.*)", response, re.IGNORECASE | re.DOTALL)
+                input_query = match.group(1).strip() if match else query
+                
+                print(f"""
+                Agent
+                =========================================
+                Query: {query}
+                Tool: {tool}
+                Input: {input_query}
+                """)
+                
+                return tool, input_query
 
-        tool, input_query = match.groups()
-        input_query = input_query.strip()  # 移除可能的前後空白
-
-        print(
-            f"""
+        # 如果沒有找到匹配的工具，默認使用 chat_completion
+        print(f"""
         Agent
         =========================================
         Query: {query}
-        Tool: {tool}
-        Input: {input_query}
-        """
-        )
+        Tool: chat_completion (default)
+        Input: {query}
+        """)
+        
+        return "chat_completion", query
 
-        return tool, input_query
     except Exception as e:
         print(f"Error in agent function: {e}")
         return "chat_completion", query  # 出錯時默認使用聊天完成
