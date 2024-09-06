@@ -34,7 +34,6 @@ def g4f_generate_image(query: str) -> str:
     except Exception as e:
         print(
         "There're something wrong in openai api, please try again.\n"
-        "Or connect to developer: https://github.com/Lin-jun-xiang/chatgpt-line-bot/issues \n"
         f"{e}"
         )
 
