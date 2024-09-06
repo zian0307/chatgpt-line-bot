@@ -8,7 +8,7 @@ import logging
 logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 Base = declarative_base()
-engine = create_engine('sqlite:///user_settings.db', echo=True)
+engine = create_engine('sqlite:///user_settings.db', echo=False)  # 將 echo 設置為 False
 Session = sessionmaker(bind=engine)
 
 class UserSettings(Base):
