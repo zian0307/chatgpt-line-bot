@@ -41,5 +41,5 @@ def chat_completion(id: int, memory: Memory) -> str:
     """Use OpenAI API via gpt4free providers"""
     response = generate_chat_response(memory.get(id))
     memory.append(id, 'system', response)
-    print(memory.storage)
+    # print(memory.storage)
     return response
