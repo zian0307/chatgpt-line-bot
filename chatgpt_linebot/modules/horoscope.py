@@ -14,7 +14,9 @@ class Horoscope:
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
     }
     error_msg = (
-        "Cannot get the horoscope, please try again.🥶\n"
+        "喵 看來星星們今天有點調皮呢 😺\n"
+        "我們待會再試試看好嗎\n"
+        "或許你想先聊聊今天發生的有趣事情"
     )
 
 
