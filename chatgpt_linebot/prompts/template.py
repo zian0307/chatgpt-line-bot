@@ -59,6 +59,7 @@ The available tools are:
 - search_image_url: Finds existing images on the web. Use for requests about real places, people, or events.
 - horoscope.get_horoscope_response: Provides weekly horoscope predictions. Use only for zodiac sign related queries.
 - chat_completion: Handles general conversations, questions, and tasks not covered by other tools.
+- recommend_videos: Recommends daily music videos from YouTube.
 
 Instructions:
 1. Carefully analyze the user's query.
@@ -69,7 +70,6 @@ Instructions:
 4. For image-related tools, ensure the input is a clear, concise description.
 5. For horoscope, the input should be just the zodiac sign.
 6. For chat_completion, use the original query as input.
-
 Respond only with the function name and input as specified. Do not include any other text or explanations.
 
 User query: 
