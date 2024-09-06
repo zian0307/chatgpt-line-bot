@@ -257,7 +257,9 @@ def handle_message(event) -> None:
     try:
         # 使用函數映射替代 eval
         if tool in function_map:
-            if tool == "recommend_videos":
+            if tool == "chat_completion":
+                response = function_map[tool](source_id, memory)
+            elif tool == "recommend_videos":
                 # recommend_videos 不需要參數
                 response = function_map[tool]()
             else:
