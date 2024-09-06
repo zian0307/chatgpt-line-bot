@@ -187,7 +187,9 @@ def handle_message(event) -> None:
             )
         else:
             save_user_settings(user_id, threads_user_id, "")
-        send_text_reply(reply_token, f"喵~！我記住你的Threads名字啦：{threads_user_id} (^._.^)ﾉ")
+        send_text_reply(
+            reply_token, f"喵~！我記住你的Threads名字啦：{threads_user_id} (^._.^)ﾉ"
+        )
         return
 
     # 處理設置 Threads 訪問令牌的命令
@@ -199,7 +201,10 @@ def handle_message(event) -> None:
             save_user_settings(user_id, user_settings.threads_user_id, threads_token)
         else:
             save_user_settings(user_id, "", threads_token)
-        send_text_reply(reply_token, "喵喵~！你的Threads秘密我已經藏好啦！(=^･ω･^=)✨\n現在我們可以一起在Threads上冒險了喵~")
+        send_text_reply(
+            reply_token,
+            "喵喵~！你的Threads秘密我已經藏好啦！(=^･ω･^=)✨\n現在我們可以一起在Threads上冒險了喵~",
+        )
         return
 
     # 處理發布到 Threads 的命令
@@ -240,13 +245,27 @@ def handle_message(event) -> None:
         memory.append(source_id, "user", f"{girlfriend}:\n {user_message}")
         print("已更新記憶")  # 新增：確認記憶更新
 
+    # 創建一個函數映射字典
+    function_map = {
+        "recommend_videos": recommend_videos,
+        "chat_completion": chat_completion,
+        "rapidapis.ai_text_to_img": rapidapis.ai_text_to_img,
+        "search_image_url": search_image_url,
+        "horoscope.get_horoscope_response": horoscope.get_horoscope_response,
+    }
+    
     try:
-        # 根據選擇的工具生成回覆
-        if tool in ["chat_completion"]:
-            response = chat_completion(source_id, memory)
+        # 使用函數映射替代 eval
+        if tool in function_map:
+            if tool == "recommend_videos":
+                # recommend_videos 不需要參數
+                response = function_map[tool]()
+            else:
+                # 其他函數可能需要參數
+                response = function_map[tool](input_query)
         else:
-            response = eval(f"{tool}('{input_query}')")
-        print(f"生成的回覆: {response}")  # 新增：打印生成的回覆
+            # 如果工具不在映射中，使用默認的聊天完成
+            response = chat_completion(source_id, memory)
 
         # 發送圖片或文字回覆
         if is_url(response):
@@ -268,7 +287,11 @@ def handle_message(event) -> None:
 def recommend_from_yt() -> None:
     videos = recommend_videos()
 
-    if videos and "There're something wrong in openai api when call, please try again." not in videos:
+    if (
+        videos
+        and "There're something wrong in openai api when call, please try again."
+        not in videos
+    ):
         line_bot_api.broadcast(TextSendMessage(text=videos))
 
         # Push message to known groups

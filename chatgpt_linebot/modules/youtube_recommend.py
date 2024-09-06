@@ -56,7 +56,7 @@ def get_daily_seed(date_str: str) -> int:
     return int(hashlib.md5(date_str.encode()).hexdigest(), 16)
 
 
-def recommend_videos() -> str:
+def recommend_videos(input: str = None) -> str:
     """推薦 YouTube 影片"""
     try:
         popular_videos = get_popular_music_videos()
