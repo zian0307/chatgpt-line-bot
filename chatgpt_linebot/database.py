@@ -2,6 +2,10 @@ from sqlalchemy import create_engine, Column, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from cryptography.fernet import Fernet
+import logging
+
+# 設置 SQLAlchemy 的日誌級別為 WARNING
+logging.getLogger('sqlalchemy.engine').setLevel(logging.WARNING)
 
 Base = declarative_base()
 engine = create_engine('sqlite:///user_settings.db', echo=True)
