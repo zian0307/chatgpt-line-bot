@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Request
 from linebot import LineBotApi, WebhookHandler
-from linebot.exceptions import InvalidSignatureError
+from linebot.exceptions import InvalidSignatureError, LineBotApiError
 from linebot.models import *
 
 from chatgpt_linebot.database import (
@@ -266,39 +266,21 @@ def handle_message(event) -> None:
 
 @line_app.get("/recommend")
 def recommend_from_yt() -> None:
-    """Line Bot Broadcast
-
-    Descriptions
-    ------------
-    Recommend youtube videos to all followed users.
-    (Use cron-job.org to call this api)
-
-    References
-    ----------
-    https://www.cnblogs.com/pungchur/p/14385539.html
-    https://steam.oxxostudio.tw/category/python/example/line-push-message.html
-    """
     videos = recommend_videos()
 
-    if (
-        videos
-        and "There're something wrong in openai api when call, please try again."
-        not in videos
-    ):
+    if videos and "There're something wrong in openai api when call, please try again." not in videos:
         line_bot_api.broadcast(TextSendMessage(text=videos))
 
-        # Push message to group via known group (event.source.group_id)
-        known_group_ids = [
-            "C6d-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-            "Ccc-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-            "Cbb-xxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-        ]
-        for group_id in known_group_ids:
-            line_bot_api.push_message(group_id, TextSendMessage(text=videos))
+        # Push message to known groups
+        for group_id in config.KNOWN_GROUP_IDS:
+            try:
+                line_bot_api.push_message(group_id, TextSendMessage(text=videos))
+                print(f"成功發送消息到群組 {group_id}")
+            except LineBotApiError as e:
+                print(f"發送消息到群組 {group_id} 時出錯：{str(e)}")
 
-        print("Successfully recommended videos")
-        return {"status": "success", "message": "recommended videos."}
-
+        print("成功推薦影片")
+        return {"status": "success", "message": "推薦了影片。"}
     else:
-        print("Failed recommended videos")
-        return {"status": "failed", "message": "no get recommended videos."}
+        print("推薦影片失敗")
+        return {"status": "failed", "message": "未獲取推薦影片。"}
