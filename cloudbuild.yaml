@@ -10,3 +10,6 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/chatgpt-line-bot'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
