@@ -56,7 +56,7 @@ def get_store_info(html_content):
     return stores
 
 def get_coordinates(address):
-    api_key = ""  # 請替換為您的 Google Maps API 密鑰
+    api_key = "api_key"  # 請替換為您的 Google Maps API 密鑰
     base_url = "https://maps.googleapis.com/maps/api/geocode/json"
     params = {
         "address": address,
