@@ -34,6 +34,7 @@ googlemaps = "^4.10.0"
 twstock = "^1.4.0"
 numpy = "^2.1.1"
 matplotlib = "^3.9.2"
+psycopg2-binary = "^2.9.9"
 
 [build-system]
 requires = ["poetry-core"]
