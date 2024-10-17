@@ -116,7 +116,7 @@ def execute_tool(tool, input_query, source_id):
     """執行選定的工具"""
     function_map = {
         "recommend_videos": recommend_videos,
-        "chat_completion": lambda: chat_completion(source_id, memory, input_query),
+        "chat_completion": lambda: chat_completion(source_id, memory),
         "rapidapis.ai_text_to_img": rapidapis.ai_text_to_img,
         "search_image_url": search_image_url,
         "horoscope.get_horoscope_response": horoscope.get_horoscope_response,
@@ -126,13 +126,13 @@ def execute_tool(tool, input_query, source_id):
     
     if selected_function is None:
         # 如果沒有找到對應的工具，默認使用 chat_completion
-        return chat_completion(source_id, memory, input_query)
+        return chat_completion(source_id, memory)
     
     if tool == "chat_completion":
         return selected_function()
     else:
-        # 對於其他工具，不傳遞 input_query
-        return selected_function()
+        # 對於其他工具，傳遞 input_query
+        return selected_function(input_query)
 
 def send_response(reply_token, response):
     """發送回覆"""
