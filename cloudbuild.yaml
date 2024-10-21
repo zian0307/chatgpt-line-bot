@@ -9,6 +9,30 @@ steps:
       - 'SERPAPI_API_KEY=${_SERPAPI_API_KEY}'
       - 'OPENAI_API_KEY=${_OPENAI_API_KEY}'
 
+  # 添加一個驗證步驟
+  - name: 'gcr.io/cloud-builders/bash'
+    entrypoint: 'bash'
+    args:
+      - '-c'
+      - |
+        echo "Validating environment variables..."
+        for var in LINE_CHANNEL_SECRET LINE_CHANNEL_ACCESS_TOKEN YOUTUBE_API_KEY SERPAPI_API_KEY OPENAI_API_KEY
+        do
+          if [ -z "${!var}" ]; then
+            echo "Error: $var is not set or empty"
+            exit 1
+          else
+            echo "$var is set (value hidden for security)"
+          fi
+        done
+        echo "All required environment variables are set."
+    env:
+      - 'LINE_CHANNEL_SECRET=${_LINE_CHANNEL_SECRET}'
+      - 'LINE_CHANNEL_ACCESS_TOKEN=${_LINE_CHANNEL_ACCESS_TOKEN}'
+      - 'YOUTUBE_API_KEY=${_YOUTUBE_API_KEY}'
+      - 'SERPAPI_API_KEY=${_SERPAPI_API_KEY}'
+      - 'OPENAI_API_KEY=${_OPENAI_API_KEY}'
+
   # 推送鏡像到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/chatgpt-line-bot']
