@@ -28,6 +28,9 @@ handler = WebhookHandler(config.LINE_CHANNEL_SECRET)
 
 @line_app.post("/callback")
 async def callback(request: Request) -> str:
+    print("收到 LINE 消息")
+    print(request.headers)
+    print(config.LINE_CHANNEL_ACCESS_TOKEN)
     signature = request.headers["X-Line-Signature"]
     body = await request.body()
     try:
