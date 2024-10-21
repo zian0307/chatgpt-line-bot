@@ -1,29 +1,28 @@
 steps:
-  # 構建 Docker 鏡像
+  # 建構 Docker 映像
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/chatgpt-line-bot', '.']
-    env:
+    args:
+      - 'build'
+      - '-t'
+      - 'gcr.io/$PROJECT_ID/chatgpt-line-bot'
+      - '--build-arg'
       - 'LINE_CHANNEL_SECRET=${_LINE_CHANNEL_SECRET}'
+      - '--build-arg'
       - 'LINE_CHANNEL_ACCESS_TOKEN=${_LINE_CHANNEL_ACCESS_TOKEN}'
+      - '--build-arg'
       - 'YOUTUBE_API_KEY=${_YOUTUBE_API_KEY}'
+      - '--build-arg'
       - 'SERPAPI_API_KEY=${_SERPAPI_API_KEY}'
+      - '--build-arg'
       - 'OPENAI_API_KEY=${_OPENAI_API_KEY}'
+      - '.'
 
-  # 推送鏡像到 Container Registry
+  # 推送映像到 Container Registry
   - name: 'gcr.io/cloud-builders/docker'
     args: ['push', 'gcr.io/$PROJECT_ID/chatgpt-line-bot']
-
 
 images:
   - 'gcr.io/$PROJECT_ID/chatgpt-line-bot'
 
 options:
   logging: CLOUD_LOGGING_ONLY
-
-# 定義替換變量
-substitutions:
-  _LINE_CHANNEL_SECRET: ${_LINE_CHANNEL_SECRET}
-  _LINE_CHANNEL_ACCESS_TOKEN: ${_LINE_CHANNEL_ACCESS_TOKEN}
-  _YOUTUBE_API_KEY: ${_YOUTUBE_API_KEY}
-  _SERPAPI_API_KEY: ${_SERPAPI_API_KEY}
-  _OPENAI_API_KEY: ${_OPENAI_API_KEY}

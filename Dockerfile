@@ -1,7 +1,7 @@
-# 使用官方 Python 運行時作為父鏡像
+# 使用官方 Python 運行時作為父映像
 FROM python:3.10-slim
 
-# 設置工作目錄
+# 設定工作目錄
 WORKDIR /app
 
 # 複製項目文件
@@ -10,7 +10,14 @@ COPY . .
 # 安裝依賴
 RUN pip install -r requirements.txt
 
-# 設置環境變量
+# 接收建構參數
+ARG LINE_CHANNEL_SECRET
+ARG LINE_CHANNEL_ACCESS_TOKEN
+ARG YOUTUBE_API_KEY
+ARG SERPAPI_API_KEY
+ARG OPENAI_API_KEY
+
+# 設定環境變數
 ENV PORT=8080
 ENV LINE_CHANNEL_SECRET=${LINE_CHANNEL_SECRET}
 ENV LINE_CHANNEL_ACCESS_TOKEN=${LINE_CHANNEL_ACCESS_TOKEN}
