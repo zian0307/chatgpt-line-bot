@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, Request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, LocationMessage, TextSendMessage, ImageSendMessage
+from linebot.models import MessageEvent, TextMessage, LocationMessage, TextSendMessage, ImageSendMessage, LocationSendMessage
 
 from chatgpt_linebot.database import decrypt_token, get_user_settings, save_user_settings
 from chatgpt_linebot.memory import Memory
@@ -82,7 +82,8 @@ def handle_location_message(event, reply_token):
     user_latitude = event.message.latitude
     user_longitude = event.message.longitude
     nearest_stores = find_nearest_stores_by_json(user_latitude, user_longitude, n=3)
-    reply_message = format_nearest_stores(nearest_stores)
+    # reply_message = format_nearest_stores(nearest_stores)
+    reply_message = format_nearest_stores_as_location_messages(nearest_stores)
     send_text_reply(reply_token, reply_message)
 
 def handle_command(event, reply_token, user_message):
@@ -156,6 +157,26 @@ def format_nearest_stores(stores):
         reply_message += "\n"
     return reply_message
 
+def format_nearest_stores_as_location_messages(stores):
+    """將最近的三家店鋪信息格式化為 LocationSendMessage 對象列表"""
+    location_messages = []
+    for store in stores[:3]:  # 只處理前三個店鋪
+        title = f"{store['name']} (距離: {store['distance']:.2f} km)"
+        address = store['address']
+        latitude = store.get('latitude')
+        longitude = store.get('longitude')
+        
+        if latitude and longitude:
+            location_message = LocationSendMessage(
+                title=title,
+                address=address,
+                latitude=latitude,
+                longitude=longitude
+            )
+            location_messages.append(location_message)
+    
+    return location_messages
+
 def handle_set_threads_id(event, reply_token, user_message):
     """處理設置 Threads ID 的命令"""
     user_id = event.source.user_id
@@ -220,10 +241,8 @@ def agent(query: str) -> tuple[str, str]:
             if re.search(rf"\b{re.escape(tool)}\b", response, re.IGNORECASE):
                 match = re.search(rf"{re.escape(tool)}:?\s*(.*)", response, re.IGNORECASE | re.DOTALL)
                 input_query = match.group(1).strip() if match else query
-                print(f"Agent\n=========================================\nQuery: {query}\nTool: {tool}\nInput: {input_query}\n")
                 return tool, input_query
 
-        print(f"Agent\n=========================================\nQuery: {query}\nTool: chat_completion (default)\nInput: {query}\n")
         return "chat_completion", query
 
     except Exception as e:
