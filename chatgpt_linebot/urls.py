@@ -85,10 +85,9 @@ def handle_location_message(event, reply_token):
     # reply_message = format_nearest_stores(nearest_stores)
     try:
         reply_message = format_nearest_stores_as_location_messages(nearest_stores)
+        send_location_reply(reply_token, reply_message)
     except Exception as e:
         print(f"發生錯誤: {str(e)}")
-        reply_message = format_nearest_stores(nearest_stores)
-    send_text_reply(reply_token, reply_message)
 
 def handle_command(event, reply_token, user_message):
     """處理特定命令"""
@@ -163,7 +162,6 @@ def format_nearest_stores(stores):
 
 def format_nearest_stores_as_location_messages(stores):
     """將最近的店鋪信息格式化為 LocationSendMessage 對象列表"""
-    location_messages = []
     for store in stores[:1]:
         title = f"{store['name']} (距離: {store['distance']:.2f} km)"
         address = store['address']
@@ -177,9 +175,8 @@ def format_nearest_stores_as_location_messages(stores):
                 latitude=latitude,
                 longitude=longitude
             )
-            location_messages.append(location_message)
     
-    return location_messages
+    return location_message
 
 def handle_set_threads_id(event, reply_token, user_message):
     """處理設置 Threads ID 的命令"""
@@ -271,6 +268,11 @@ def send_text_reply(reply_token, text: str) -> None:
         text = "There're some problem in server."
     text_message = TextSendMessage(text=text)
     line_bot_api.reply_message(reply_token, messages=text_message)
+    
+def send_location_reply(reply_token, location_message: LocationSendMessage) -> None:
+    if not location_message:
+        send_text_reply(reply_token, "Cannot get location.")
+    line_bot_api.reply_message(reply_token, messages=location_message)
 
 def search_image_url(query: str) -> str:
     img_crawler = ImageCrawler(nums=5)
