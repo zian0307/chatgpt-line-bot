@@ -162,9 +162,9 @@ def format_nearest_stores(stores):
     return reply_message
 
 def format_nearest_stores_as_location_messages(stores):
-    """將最近的三家店鋪信息格式化為 LocationSendMessage 對象列表"""
+    """將最近的店鋪信息格式化為 LocationSendMessage 對象列表"""
     location_messages = []
-    for store in stores[:3]:  # 只處理前三個店鋪
+    for store in stores[:1]:
         title = f"{store['name']} (距離: {store['distance']:.2f} km)"
         address = store['address']
         latitude = store.get('latitude')
