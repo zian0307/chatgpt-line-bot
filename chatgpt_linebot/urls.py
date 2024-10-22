@@ -87,7 +87,6 @@ def handle_location_message(event, reply_token):
         reply_message = format_nearest_stores_as_location_messages(nearest_stores)
     except Exception as e:
         print(f"發生錯誤: {str(e)}")
-        print(f"使用 fallback 函數")
         reply_message = format_nearest_stores(nearest_stores)
     send_text_reply(reply_token, reply_message)
 
