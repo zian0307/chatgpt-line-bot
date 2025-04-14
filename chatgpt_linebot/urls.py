@@ -1,5 +1,11 @@
 import re
 import sys
+import traceback
+import numpy as np
+import soundfile as sf
+import io
+import os
+import tempfile
 from urllib.parse import urlparse
 
 from fastapi import APIRouter, HTTPException, Request
@@ -100,38 +106,44 @@ def handle_audio_message(event, reply_token):
         # 獲取聲音訊息的內容
         audio_content = line_bot_api.get_message_content(event.message.id)
         
-        # 將音頻數據轉換為numpy數組
-        import numpy as np
-        import soundfile as sf
-        import io
-        
         # 將Content對象轉換為二進制數據
         audio_bytes = audio_content.content
         
-        # 將二進制數據轉換為numpy數組
-        audio_data, sample_rate = sf.read(io.BytesIO(audio_bytes))
+        # 將二進制數據保存為臨時文件
+        with tempfile.NamedTemporaryFile(suffix='.m4a', delete=False) as temp_file:
+            temp_path = temp_file.name
+            temp_file.write(audio_bytes)
         
-        # 使用PokemonSoundMatcher進行比對
-        match_result = pokemon_matcher.match_sound(audio_data)
-        
-        if match_result:
-            # 找到匹配的寶可夢
-            pokemon_name = match_result["name"]
-            similarity = match_result["similarity"]
+        try:
+            # 使用 librosa 載入音頻
+            import librosa
+            audio_data, sample_rate = librosa.load(temp_path, duration=3.0)
             
-            # 回覆用戶
-            response = f"我聽到了！這可能是 {pokemon_name} 的叫聲！(相似度: {similarity:.2f})"
-            send_text_reply(reply_token, response)
+            # 使用PokemonSoundMatcher進行比對
+            match_result = pokemon_matcher.match_sound(audio_data)
             
-            # 如果需要，可以回覆寶可夢的叫聲
-            # pokemon_file = pokemon_matcher.pokemon_data[match_result["id"]]["file"]
-            # pokemon_file_path = os.path.join(pokemon_matcher.database_path, pokemon_file)
-            # send_audio_reply(reply_token, pokemon_file_path, 3000)  # 假設時長為3秒
-        else:
-            # 沒有找到匹配的寶可夢
-            send_text_reply(reply_token, "抱歉，我無法識別這個聲音是哪個寶可夢的叫聲。")
+            if match_result:
+                # 找到匹配的寶可夢
+                pokemon_name = match_result["name"]
+                similarity = match_result["similarity"]
+                
+                # 回覆用戶
+                response = f"我聽到了！這可能是 {pokemon_name} 的叫聲！(相似度: {similarity:.2f})"
+                send_text_reply(reply_token, response)
+                
+                # 如果需要，可以回覆寶可夢的叫聲
+                # pokemon_file = pokemon_matcher.pokemon_data[match_result["id"]]["file"]
+                # pokemon_file_path = os.path.join(pokemon_matcher.database_path, pokemon_file)
+                # send_audio_reply(reply_token, pokemon_file_path, 3000)  # 假設時長為3秒
+            else:
+                # 沒有找到匹配的寶可夢
+                send_text_reply(reply_token, "抱歉，我無法識別這個聲音是哪個寶可夢的叫聲。")
+        finally:
+            # 刪除臨時文件
+            os.unlink(temp_path)
     except Exception as e:
         print(f"處理聲音訊息時發生錯誤: {str(e)}")
+        print(traceback.format_exc())
         send_text_reply(reply_token, f"處理聲音訊息時發生錯誤: {str(e)}")
 
 def handle_command(event, reply_token, user_message):
