@@ -5,11 +5,11 @@ from urllib.parse import urlparse
 from fastapi import APIRouter, HTTPException, Request
 from linebot import LineBotApi, WebhookHandler
 from linebot.exceptions import InvalidSignatureError, LineBotApiError
-from linebot.models import MessageEvent, TextMessage, LocationMessage, TextSendMessage, ImageSendMessage, LocationSendMessage
+from linebot.models import MessageEvent, TextMessage, LocationMessage, AudioMessage, TextSendMessage, ImageSendMessage, LocationSendMessage, AudioSendMessage
 
 from chatgpt_linebot.database import decrypt_token, get_user_settings, save_user_settings
 from chatgpt_linebot.memory import Memory
-from chatgpt_linebot.modules import Horoscope, ImageCrawler, RapidAPIs, recommend_videos
+from chatgpt_linebot.modules import Horoscope, ImageCrawler, RapidAPIs, recommend_videos, PokemonSoundMatcher
 from chatgpt_linebot.modules.chat import generate_chat_response, chat_completion
 from chatgpt_linebot.modules.threads_function import ThreadsAPI
 from chatgpt_linebot.modules.gaole.find_gaole import find_nearest_stores_by_json
@@ -22,6 +22,7 @@ line_app = APIRouter()
 memory = Memory(3)
 horoscope = Horoscope()
 rapidapis = RapidAPIs(config.RAPID)
+pokemon_matcher = PokemonSoundMatcher()
 
 line_bot_api = LineBotApi(config.LINE_CHANNEL_ACCESS_TOKEN)
 handler = WebhookHandler(config.LINE_CHANNEL_SECRET)
@@ -36,7 +37,7 @@ async def callback(request: Request) -> str:
         raise HTTPException(status_code=400, detail="Missing Parameter")
     return "OK"
 
-@handler.add(MessageEvent, message=(TextMessage, LocationMessage))
+@handler.add(MessageEvent, message=(TextMessage, LocationMessage, AudioMessage))
 def handle_message(event) -> None:
     """處理用戶發送的消息"""
     print(f"開始處理消息: {event}")
@@ -46,6 +47,8 @@ def handle_message(event) -> None:
         handle_text_message(event, reply_token)
     elif isinstance(event.message, LocationMessage):
         handle_location_message(event, reply_token)
+    elif isinstance(event.message, AudioMessage):
+        handle_audio_message(event, reply_token)
     else:
         print("未知消息類型")
         send_text_reply(reply_token, "抱歉，我無法處理這種類型的消息。")
@@ -88,6 +91,45 @@ def handle_location_message(event, reply_token):
         send_location_reply(reply_token, reply_message)
     except Exception as e:
         print(f"發生錯誤: {str(e)}")
+
+def handle_audio_message(event, reply_token):
+    """處理聲音訊息"""
+    print(f"收到聲音訊息: {event.message.id}")
+    
+    try:
+        # 獲取聲音訊息的內容
+        audio_content = line_bot_api.get_message_content(event.message.id)
+        
+        # 將音頻數據轉換為numpy數組
+        import numpy as np
+        import soundfile as sf
+        import io
+        
+        # 將二進制數據轉換為numpy數組
+        audio_data, sample_rate = sf.read(io.BytesIO(audio_content))
+        
+        # 使用PokemonSoundMatcher進行比對
+        match_result = pokemon_matcher.match_sound(audio_data)
+        
+        if match_result:
+            # 找到匹配的寶可夢
+            pokemon_name = match_result["name"]
+            similarity = match_result["similarity"]
+            
+            # 回覆用戶
+            response = f"我聽到了！這可能是 {pokemon_name} 的叫聲！(相似度: {similarity:.2f})"
+            send_text_reply(reply_token, response)
+            
+            # 如果需要，可以回覆寶可夢的叫聲
+            # pokemon_file = pokemon_matcher.pokemon_data[match_result["id"]]["file"]
+            # pokemon_file_path = os.path.join(pokemon_matcher.database_path, pokemon_file)
+            # send_audio_reply(reply_token, pokemon_file_path, 3000)  # 假設時長為3秒
+        else:
+            # 沒有找到匹配的寶可夢
+            send_text_reply(reply_token, "抱歉，我無法識別這個聲音是哪個寶可夢的叫聲。")
+    except Exception as e:
+        print(f"處理聲音訊息時發生錯誤: {str(e)}")
+        send_text_reply(reply_token, f"處理聲音訊息時發生錯誤: {str(e)}")
 
 def handle_command(event, reply_token, user_message):
     """處理特定命令"""
@@ -299,3 +341,12 @@ def recommend_from_yt() -> None:
     else:
         print("推薦影片失敗")
         return {"status": "failed", "message": "未獲取推薦影片。"}
+
+def send_audio_reply(reply_token, audio_url: str, duration: int) -> None:
+    """發送聲音訊息"""
+    if not audio_url:
+        send_text_reply(reply_token, "無法獲取聲音文件。")
+        return
+    
+    audio_message = AudioSendMessage(original_content_url=audio_url, duration=duration)
+    line_bot_api.reply_message(reply_token, messages=audio_message)
