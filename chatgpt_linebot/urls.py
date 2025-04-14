@@ -7,6 +7,7 @@ import io
 import os
 import tempfile
 from urllib.parse import urlparse
+from pydub import AudioSegment
 
 from fastapi import APIRouter, HTTPException, Request
 from linebot import LineBotApi, WebhookHandler
@@ -115,12 +116,21 @@ def handle_audio_message(event, reply_token):
             temp_file.write(audio_bytes)
         
         try:
-            # 使用 librosa 載入音頻
-            import librosa
-            audio_data, sample_rate = librosa.load(temp_path, duration=3.0)
+            # 使用 pydub 載入音頻
+            audio = AudioSegment.from_file(temp_path, format="m4a")
+            
+            # 轉換為 numpy 數組
+            samples = np.array(audio.get_array_of_samples())
+            
+            # 如果是立體聲，轉換為單聲道
+            if audio.channels == 2:
+                samples = samples.reshape((-1, 2)).mean(axis=1)
+            
+            # 正規化
+            samples = samples / np.max(np.abs(samples))
             
             # 使用PokemonSoundMatcher進行比對
-            match_result = pokemon_matcher.match_sound(audio_data)
+            match_result = pokemon_matcher.match_sound(samples)
             
             if match_result:
                 # 找到匹配的寶可夢
