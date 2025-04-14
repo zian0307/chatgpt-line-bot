@@ -105,8 +105,11 @@ def handle_audio_message(event, reply_token):
         import soundfile as sf
         import io
         
+        # 將Content對象轉換為二進制數據
+        audio_bytes = audio_content.content
+        
         # 將二進制數據轉換為numpy數組
-        audio_data, sample_rate = sf.read(io.BytesIO(audio_content))
+        audio_data, sample_rate = sf.read(io.BytesIO(audio_bytes))
         
         # 使用PokemonSoundMatcher進行比對
         match_result = pokemon_matcher.match_sound(audio_data)
