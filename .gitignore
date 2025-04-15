@@ -163,3 +163,52 @@ cython_debug/
 #.idea/
 
 api.sh
+
+# 環境變數檔案
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed
+.cfg
+
+# 虛擬環境
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 日誌
+*.log
+
+# 本地設定
+local_settings.py
+
+# 資料庫
+*.db
+*.sqlite3
+
+# 暫存檔案
+*.tmp
+*.temp
