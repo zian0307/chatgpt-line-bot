@@ -35,6 +35,10 @@ twstock = "^1.4.0"
 numpy = "^2.1.1"
 matplotlib = "^3.9.2"
 psycopg2-binary = "^2.9.9"
+librosa = "^0.11.0"
+pydub = "^0.25.1"
+tensorflow = "^2.19.0"
+tensorflow-hub = "^0.16.1"
 
 [build-system]
 requires = ["poetry-core"]
